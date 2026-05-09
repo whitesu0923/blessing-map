@@ -1,0 +1,673 @@
+/* ═══════════════════════════════════════
+   纯黑白 1-Bit 像素艺术风格
+   中国祈福地图（高德地图版）
+   Keith Haring 极简波普像素
+   字体通过 index.html 的 <link> 统一加载
+   ═══════════════════════════════════════ */
+
+:root {
+  /* 核心色彩 — 极致黑白 + 唯一朱砂红 */
+  --c-black: #000000;
+  --c-white: #FFFFFF;
+  --c-red: #E63927;        /* 仅用于灯笼🏮和极少数强调 */
+  --c-gold: #FADA60;      /* 金色高亮 / 筛选激活 */
+
+  /* 灰阶 — 仅允许三个 */
+  --c-gray-dark: #333333;
+  --c-gray: #666666;
+  --c-gray-light: #999999;
+
+  /* 背景色 */
+  --c-bg: #000000;
+  --c-bg-card: #111111;
+  --c-bg-card-hover: #1A1A1A;
+  --c-surface: #111111;
+
+  /* 文字色 */
+  --c-text: #FFFFFF;
+  --c-text-secondary: #999999;
+  --c-text-dark: #FFFFFF;
+
+  /* 边框色 */
+  --c-border: #FFFFFF;
+
+  /* 字体 */
+  --font-serif: 'Noto Serif SC', 'STFangsong', 'FangSong', 'KaiTi', serif;
+  --font-sans: -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  --font-pixel: 'VT323', 'Press Start 2P', monospace;
+
+  /* 圆角 — 全部为零，绝对扁平 */
+  --radius-sm: 0;
+  --radius-md: 0;
+  --radius-lg: 0;
+  --radius-xl: 0;
+
+  /* 阴影 — 全部取消 */
+  --shadow-gold: none;
+  --shadow-red: none;
+  --shadow-card: none;
+  --shadow-elevated: none;
+
+  /* 边框粗细 */
+  --border-thin: 2px solid #FFFFFF;
+  --border-thick: 3px solid #FFFFFF;
+
+  /* 动画 */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ── Reset ── */
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-sans);
+  background: #000000;
+  color: #FFFFFF;
+  min-height: 100vh;
+  overflow-x: hidden;
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+}
+
+a {
+  color: #FFFFFF;
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+}
+a:hover {
+  border-bottom-color: #FFFFFF;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  outline: none;
+  font-family: inherit;
+  background: none;
+  color: #FFFFFF;
+}
+
+input {
+  font-family: inherit;
+  outline: none;
+  border: 2px solid #FFFFFF;
+  padding: 8px 12px;
+  background: #000000;
+  color: #FFFFFF;
+}
+
+/* ── 像素风格滚动条 ── */
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+::-webkit-scrollbar-track {
+  background: #000000;
+  border-left: 2px solid #FFFFFF;
+}
+::-webkit-scrollbar-thumb {
+  background: #FFFFFF;
+  border: 2px solid #FFFFFF;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--c-red);
+}
+::-webkit-scrollbar-corner {
+  background: #000000;
+}
+
+/* Firefox 滚动条 */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #FFFFFF #000000;
+}
+
+/* ── 全局动画 ── */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideRight {
+  from { opacity: 0; transform: translateX(30px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes lanternSwing {
+  0%, 100% { transform: rotate(-3deg); }
+  50% { transform: rotate(3deg); }
+}
+
+/* glow / shimmer / float / markerPulse 已移除 — 1-Bit 像素风格不需要光效 */
+
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+.fade-enter-from, .fade-leave-to {
+  opacity: 0;
+}
+
+.slide-up-enter-active {
+  transition: all 0.4s var(--ease-out);
+}
+.slide-up-enter-from {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.slide-right-enter-active {
+  transition: all 0.4s var(--ease-out);
+}
+.slide-right-enter-from {
+  opacity: 0;
+  transform: translateX(30px);
+}
+
+/* ═══════════════════════════════════════
+   全局字体工具类
+   ═══════════════════════════════════════ */
+
+/* 赛博数字：经纬度、距离、数量等 */
+.cyber-number {
+  font-family: var(--font-pixel);
+  color: #00FFCC;
+  letter-spacing: 2px;
+}
+
+/* 寺庙名称 / 大标题：中式古典衬线体 */
+.temple-title {
+  font-family: var(--font-serif);
+  font-weight: 700;
+  letter-spacing: 2px;
+}
+
+/* 签文 / 海报标题：仿宋篆体后备 */
+.poster-title {
+  font-family: var(--font-serif);
+  font-weight: 900;
+  letter-spacing: 4px;
+}
+
+/* ═══════════════════════════════════════
+   图片加载失败占位
+   ═══════════════════════════════════════ */
+.img-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #1a1a1a;
+  color: #333;
+  font-family: var(--font-serif);
+  font-size: 32px;
+  min-height: 120px;
+  width: 100%;
+}
+
+/* ═══════════════════════════════════════
+   高德地图自定义 Marker 样式
+   ═══════════════════════════════════════ */
+
+/* ═══════════════════════════════════════
+   地图 Marker — 灯笼标注
+   ═══════════════════════════════════════ */
+
+/* 清除 AMap Marker 容器默认白底 */
+.amap-marker-content,
+.amap-marker {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* 1. 彻底干掉自带的白点/白底 */
+.lantern-container {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  cursor: pointer;
+  position: relative;
+  width: 36px;
+  height: 44px;
+}
+.lantern-container::after,
+.lantern-container::before {
+  display: none !important;
+}
+
+/* 2. 灯笼呼吸浮动动画 */
+.lantern-icon {
+  font-size: 28px;
+  line-height: 1;
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  animation: floatAndBreathe 3s ease-in-out infinite;
+  transform-origin: top center;
+}
+
+@keyframes floatAndBreathe {
+  0% {
+    transform: translateX(-50%) translateY(0) scale(1);
+    filter: drop-shadow(0 2px 5px rgba(255, 100, 0, 0.4));
+  }
+  50% {
+    transform: translateX(-50%) translateY(-10px) scale(1.1);
+    filter: drop-shadow(0 15px 15px rgba(255, 130, 0, 0.9));
+  }
+  100% {
+    transform: translateX(-50%) translateY(0) scale(1);
+    filter: drop-shadow(0 2px 5px rgba(255, 100, 0, 0.4));
+  }
+}
+
+/* ═══════════════════════════════════════
+   高德地图 InfoWindow 自定义样式
+   ═══════════════════════════════════════ */
+
+.amap-info-card {
+  background: #000000;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border: 2px solid #FFFFFF;
+  border-radius: 0;
+  padding: 16px;
+  min-width: 240px;
+  max-width: 300px;
+  box-shadow: none;
+  font-family: 'Noto Sans SC', sans-serif;
+  color: #FFFFFF;
+}
+
+/* 弹窗关闭按钮 */
+.amap-info-card .info-close-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  color: #999;
+  font-size: 20px;
+  cursor: pointer;
+  line-height: 1;
+  z-index: 10;
+  user-select: none;
+  transition: color 0.2s;
+}
+.amap-info-card .info-close-btn:hover {
+  color: #FFFFFF;
+}
+
+/* 弹窗图片 */
+.amap-info-card .info-img-wrap {
+  width: 100%;
+  height: 120px;
+  overflow: hidden;
+  margin-bottom: 10px;
+  border-bottom: 2px solid #FFFFFF;
+}
+.amap-info-card .info-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.amap-info-card .info-header {
+  font-family: 'Noto Serif SC', serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: #FFFFFF;
+  margin-bottom: 4px;
+  border-bottom: 2px dashed #FFFFFF;
+  padding-bottom: 8px;
+}
+
+.amap-info-card .info-city {
+  font-size: 12px;
+  color: var(--c-gray-light);
+  margin-bottom: 6px;
+  font-family: var(--font-pixel);
+  letter-spacing: 0;
+}
+
+.amap-info-card .info-category {
+  display: inline-block;
+  font-size: 11px;
+  padding: 2px 10px;
+  background: transparent;
+  border-radius: 0;
+  color: #FFFFFF;
+  margin-bottom: 8px;
+  letter-spacing: 1px;
+  border: 2px solid #FFFFFF;
+  font-family: var(--font-pixel);
+}
+
+.amap-info-card .info-brief {
+  font-size: 13px;
+  color: #CCCCCC;
+  line-height: 1.6;
+  margin-bottom: 10px;
+  border-left: 2px solid #FFFFFF;
+  padding-left: 10px;
+}
+
+.amap-info-card .info-highlight {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 0;
+  border-top: 2px dotted #FFFFFF;
+  border-bottom: 2px dotted #FFFFFF;
+}
+
+.amap-info-card .info-hl-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: #FFFFFF;
+}
+
+.amap-info-card .info-hl-badge {
+  font-size: 11px;
+  padding: 1px 6px;
+  border-radius: 0;
+  font-weight: 600;
+  border: 2px solid #FFFFFF;
+  background: transparent;
+  color: #FFFFFF;
+  font-family: var(--font-pixel);
+}
+.amap-info-card .info-hl-badge.极度灵验 {
+  background: #FFFFFF;
+  color: #000000;
+  border: 2px solid #FFFFFF;
+}
+.amap-info-card .info-hl-badge.非常灵验 {
+  background: transparent;
+  color: #FFFFFF;
+  border: 2px solid #FFFFFF;
+}
+.amap-info-card .info-hl-badge.颇为灵验 {
+  background: transparent;
+  color: var(--c-gray-light);
+  border: 2px solid var(--c-gray-light);
+}
+
+.amap-info-card .info-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.amap-info-card .info-tag {
+  font-size: 12px;
+  padding: 2px 8px;
+  background: transparent;
+  border-radius: 0;
+  border: 1px solid #FFFFFF;
+  font-family: var(--font-pixel);
+  color: #FFFFFF;
+}
+
+.amap-info-card .info-actions {
+  margin-top: 4px;
+}
+
+.amap-info-card .info-btn {
+  display: block;
+  width: 100%;
+  padding: 8px;
+  background: #FFFFFF;
+  color: #000000;
+  border-radius: 0;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-align: center;
+  transition: none;
+  border: 2px solid #FFFFFF;
+}
+.amap-info-card .info-btn:hover {
+  background: transparent;
+  color: #FFFFFF;
+  border: 2px solid #FFFFFF;
+}
+
+/* 隐藏高德默认 InfoWindow 箭头 */
+.amap-info-sharp {
+  display: none !important;
+}
+
+/* 覆盖 AMap InfoWindow 默认宽度限制 */
+.amap-info-content {
+  max-width: 400px !important;
+  min-width: 280px !important;
+  overflow: visible !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+.amap-info {
+  max-width: none !important;
+}
+
+/* ═══════════════════════════════════════
+   新版寺庙信息弹窗 temple-info-window
+   ═══════════════════════════════════════ */
+.temple-info-window {
+  position: relative;
+  background: #000000;
+  border: 2px solid #FFFFFF;
+  padding: 14px;
+  min-width: 280px;
+  max-width: 360px;
+  font-family: var(--font-sans);
+  color: #FFFFFF;
+  overflow: visible;
+}
+
+.temple-info-window .close-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  color: #999;
+  font-size: 20px;
+  cursor: pointer;
+  line-height: 1;
+  z-index: 10;
+  user-select: none;
+  transition: color 0.2s;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+.temple-info-window .close-btn:hover {
+  color: #FFFFFF;
+  border-color: #FFFFFF;
+}
+
+/* InfoWindow 图片骨架屏容器 */
+.temple-info-window .cyber-image-wrapper {
+  position: relative;
+  width: calc(100% + 28px);
+  height: 140px;
+  margin: -14px -14px 0 -14px;
+  background-color: #0a0a0a;
+  overflow: hidden;
+}
+
+/* 赛博禅意骨架屏 - 暗金扫光效果 */
+.temple-info-window .cyber-skeleton {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, #0a0a0a 25%, #1a1500 50%, #0a0a0a 75%);
+  background-size: 400% 100%;
+  animation: cyber-skeleton-loading 1.5s ease-in-out infinite;
+  z-index: 1;
+}
+
+@keyframes cyber-skeleton-loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* InfoWindow 图片 */
+.temple-info-window .temple-cover-img {
+  width: 100%;
+  height: 140px;
+  object-fit: cover;
+  display: block;
+  border-bottom: 2px solid #FFFFFF;
+  opacity: 0;
+  transition: opacity 0.4s ease-out;
+  position: relative;
+  z-index: 2;
+}
+
+.temple-info-window .temple-cover-img.is-loaded {
+  opacity: 1;
+}
+
+.temple-info-window .temple-cover-placeholder {
+  width: calc(100% + 28px);
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(248, 176, 10, 0.35);
+  font-size: 28px;
+  background: linear-gradient(135deg, rgba(30, 30, 35, 0.9), rgba(20, 20, 25, 0.95));
+  border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+  margin: -14px -14px 0 -14px;
+  position: relative;
+  overflow: hidden;
+}
+.temple-info-window .temple-cover-placeholder::after {
+  content: '暂无图片';
+  position: absolute;
+  bottom: 6px;
+  right: 10px;
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.2);
+  font-family: var(--font-pixel);
+}
+
+/* 第一行：左名字 + 右分类 */
+.temple-info-window .temple-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.2);
+  padding-bottom: 8px;
+}
+
+.temple-info-window .temple-name {
+  font-size: 20px;
+  font-weight: bold;
+  color: #ffffff;
+  margin: 0;
+  letter-spacing: 1px;
+  white-space: nowrap;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.temple-info-window .temple-category-tag {
+  font-size: 12px;
+  color: #FFD700;
+  border: 1px solid rgba(255, 215, 0, 0.5);
+  padding: 2px 8px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.temple-info-window .temple-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.temple-info-window .hash-tag {
+  font-size: 12px;
+  color: #88CCFF;
+  background: rgba(136, 204, 255, 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid rgba(136, 204, 255, 0.3);
+}
+
+.temple-info-window .temple-desc {
+  font-size: 13px;
+  color: #cccccc;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* 查看详情按钮 */
+.view-detail-btn {
+  margin-top: 12px;
+  width: 100%;
+  padding: 8px 0;
+  background: transparent;
+  color: #FFD700;
+  border: 1px solid rgba(255, 215, 0, 0.6);
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  letter-spacing: 1px;
+  text-decoration: none;
+}
+
+.view-detail-btn:hover {
+  background: rgba(255, 215, 0, 0.15);
+  border-color: #FFD700;
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+}
+
+.view-detail-btn:hover span {
+  transform: translateX(3px);
+  transition: transform 0.3s ease;
+}
+
+/* 高德地图 Logo 和 版权信息微调 */
+.amap-logo, .amap-copyright {
+  opacity: 0.3 !important;
+}
