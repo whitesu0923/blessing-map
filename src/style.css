@@ -68,6 +68,9 @@ html {
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* 移动端优化：阻止浏览器默认回弹和双击缩放 */
+  overscroll-behavior-y: none;
+  touch-action: none;
 }
 
 body {
@@ -79,6 +82,15 @@ body {
   image-rendering: pixelated;
   image-rendering: -moz-crisp-edges;
   image-rendering: crisp-edges;
+  /* 移动端优化：阻止默认手势 */
+  overscroll-behavior-y: none;
+  touch-action: none;
+}
+
+/* 地图容器移动端手势优化 */
+.map-container,
+#map-container {
+  touch-action: pan-x pan-y;
 }
 
 a {

@@ -70,6 +70,11 @@ export function useTempleMap({ mapRef, mapConfig, onDetailClick, onMarkerClick }
         rotateEnable: false,
         center: [105.0, 36.0],
         zoom: defaultZoom,
+        // 移动端优化配置
+        animateEnable: true,      // 开启平移和缩放动画
+        jogEnable: true,          // 开启带惯性的手势拖拽
+        touchZoomCenter: 1,       // 双指缩放以屏幕中心为锚点
+        isHotspot: false,         // 关闭底图热点，防止误触
         ...mapConfig,
       })
 
@@ -280,13 +285,16 @@ export function useTempleMap({ mapRef, mapConfig, onDetailClick, onMarkerClick }
       preloadImage(temple.image)
     })
 
-    marker.on('click', () => {
+    // 同时绑定 click 和 touchend（手机端触摸结束）事件，一点即开
+    const handleMarkerTap = () => {
       if (onMarkerClick) {
         onMarkerClick(temple)
       } else {
         openInfoWindow(temple, marker.getPosition())
       }
-    })
+    }
+    marker.on('click', handleMarkerTap)
+    marker.on('touchend', handleMarkerTap)
 
     return marker
   }
