@@ -301,11 +301,7 @@ const {
   temples: computed(() => filteredTemples.value),
   mapConfig: { zoom: 5, center: [104.19, 35.86] },
   onDetailClick: openDrawer,
-  onMarkerClick: focusAndCenterTemple,
-  onMapReady: () => {
-    // 地图底图加载完毕后才关闭 Loading，避免白屏
-    isLoading.value = false
-  },
+  onMarkerClick: focusAndCenterTemple, // Marker 点击时复用相同的平移逻辑
 })
 
 // 防抖包装：300ms 内只执行最后一次 renderMarkers
@@ -399,11 +395,6 @@ onMounted(async () => {
       return
     }
 
-    // 安全超时：最多 10 秒后强制关闭 Loading（防止网络异常时永远白屏）
-    setTimeout(() => {
-      isLoading.value = false
-    }, 10000)
-
     // 延迟执行地图操作，确保高德地图完全初始化
     setTimeout(() => {
       const cityTemplesList = cityTemples.value
@@ -418,6 +409,7 @@ onMounted(async () => {
     }, 500)
   } catch (e) {
     console.error('[CityMapPage] 加载失败:', e)
+  } finally {
     isLoading.value = false
   }
 })

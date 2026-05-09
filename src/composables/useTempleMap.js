@@ -73,14 +73,6 @@ export function useTempleMap({ mapRef, mapConfig, onDetailClick, onMarkerClick }
         ...mapConfig,
       })
 
-      // 地图底图瓦片加载完毕后，通知外部关闭 Loading
-      map.on('complete', () => {
-        console.log('[useTempleMap] 地图底图加载完成')
-        if (options.onMapReady) {
-          options.onMapReady()
-        }
-      })
-
       window.addEventListener('resize', handleResize)
       return map
     } catch (e) {
