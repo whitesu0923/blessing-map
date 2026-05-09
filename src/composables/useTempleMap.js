@@ -25,6 +25,9 @@ export function useTempleMap({ mapRef, mapConfig, onDetailClick, onMarkerClick }
   let infoWindowTimer = null
   let renderRafId = null
 
+  // 移动端检测
+  const isMobile = window.innerWidth <= 768 || /Mobi|Android|iPhone/i.test(navigator.userAgent)
+
   // ═══════════════════════════════════════════════════════════════
   // 全局事件代理：InfoWindow "查看详情" 按钮点击
   // 使用事件代理而非 setTimeout + querySelector，确保 100% 可靠
@@ -68,6 +71,14 @@ export function useTempleMap({ mapRef, mapConfig, onDetailClick, onMarkerClick }
         center: [105.0, 36.0],
         zoom: defaultZoom,
         ...mapConfig,
+      })
+
+      // 地图底图瓦片加载完毕后，通知外部关闭 Loading
+      map.on('complete', () => {
+        console.log('[useTempleMap] 地图底图加载完成')
+        if (options.onMapReady) {
+          options.onMapReady()
+        }
       })
 
       window.addEventListener('resize', handleResize)
@@ -304,28 +315,57 @@ export function useTempleMap({ mapRef, mapConfig, onDetailClick, onMarkerClick }
       markers = []
     }
 
-    if (validTemples.length <= batchSize) {
-      markers = validTemples.map(temple => createMarker(temple)).filter(m => m !== null)
-      map.add(markers)
-      return
-    }
+    // 创建所有 Marker 对象
+    markers = validTemples.map(temple => createMarker(temple)).filter(m => m !== null)
 
-    let index = 0
-    const total = validTemples.length
+    // ====== 核心分支：区分设备 ======
+    if (isMobile) {
+      // 【手机端】：开启视野剔除，只渲染屏幕内的灯笼
+      console.log('[useTempleMap] 检测到移动端，开启可视区域渲染优化')
+      renderMarkersInBounds()
 
-    const renderBatch = () => {
-      const batch = validTemples.slice(index, index + batchSize)
-      const batchMarkers = batch.map(temple => createMarker(temple)).filter(m => m !== null)
-      map.add(batchMarkers)
-      markers.push(...batchMarkers)
-      index += batchSize
-
-      if (index < total) {
+      // 监听拖拽和缩放，停止时重新计算
+      map.off('moveend', renderMarkersInBounds)
+      map.off('zoomend', renderMarkersInBounds)
+      map.on('moveend', renderMarkersInBounds)
+      map.on('zoomend', renderMarkersInBounds)
+    } else {
+      // 【电脑端】：一次性全部渲染
+      console.log('[useTempleMap] 检测到 PC 端，一次性渲染所有灯笼')
+      if (markers.length <= batchSize) {
+        map.add(markers)
+      } else {
+        // 数据量大时分批添加
+        let index = 0
+        const total = markers.length
+        const renderBatch = () => {
+          const batch = markers.slice(index, index + batchSize)
+          map.add(batch)
+          index += batchSize
+          if (index < total) {
+            renderRafId = requestAnimationFrame(renderBatch)
+          }
+        }
         renderRafId = requestAnimationFrame(renderBatch)
       }
     }
+  }
 
-    renderRafId = requestAnimationFrame(renderBatch)
+  // 视野剔除函数（仅手机端使用）
+  const renderMarkersInBounds = () => {
+    if (!map || markers.length === 0) return
+    const bounds = map.getBounds()
+
+    markers.forEach(marker => {
+      const isVisible = bounds.contains(marker.getPosition())
+      const isAdded = marker.getMap() !== null
+
+      if (isVisible && !isAdded) {
+        map.add(marker)
+      } else if (!isVisible && isAdded) {
+        map.remove(marker)
+      }
+    })
   }
 
   // 渲染 Marker（使用分批渲染避免卡顿）
